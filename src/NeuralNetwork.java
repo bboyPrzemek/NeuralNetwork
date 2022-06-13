@@ -1,28 +1,38 @@
 
 public class NeuralNetwork {
-    private double[] inputs;
-    private double[] outputs;
-    private int[] networkSize;
+    private double[][] inputs;
+    private double[][] outputs;
+    private int[] nodesInLayers;
     private ActivationFunction activationFunction;
     private Neuron[][] neuronLayers;
     private double learningRate;
+    private int iterations;
 
-    public NeuralNetwork(ActivationFunction activationFunction) {
+    public NeuralNetwork(double[][] inputs, double[][] outputs,int[] nodesInLayers, ActivationFunction activationFunction) {
         this.activationFunction = activationFunction;
+        this.inputs = inputs;
+        this.outputs = outputs;
+        this.nodesInLayers = nodesInLayers;
+        this.learningRate = 0.5;
+        this.iterations = 50000;
+        createLayers();
     }
 
     public void createLayers() {
-        neuronLayers = new Neuron[networkSize.length][];
+        int numOfNeuronLayers = nodesInLayers.length - 1;
+        neuronLayers = new Neuron[numOfNeuronLayers][];
+      //  System.out.println(neuronLayers.length);
         Neuron[] layer;
 
-        for (int i = 0; i < networkSize.length; i++) {
-            layer = new Neuron[networkSize[i]];
-            for (int j = 0; j < networkSize[i]; j++) {
-                if (i == 0) {
-                    Neuron neuron = new Neuron(inputs);
+        for (int i = 1; i < nodesInLayers.length; i++) {
+            layer = new Neuron[nodesInLayers[i]];
+            for (int j = 0; j < nodesInLayers[i]; j++) {
+                if (i == 1) {
+                    Neuron neuron = new Neuron(inputs[0]);
                     layer[j] = neuron;
                 } else {
-                    int neuronsInPreviousLayer = neuronLayers[i - 1].length;
+                    System.out.println(i);
+                    int neuronsInPreviousLayer = neuronLayers[i - 2].length;
                     double[] tempInputs = new double[neuronsInPreviousLayer];
                     for (int k = 0; k < neuronsInPreviousLayer; k++) {
                         tempInputs[k] = 0;
@@ -31,11 +41,12 @@ public class NeuralNetwork {
                     layer[j] = neuron;
                 }
             }
-            this.neuronLayers[i] = layer;
+            this.neuronLayers[i - 1] = layer;
         }
     }
 
-    public void calcError() {
+    public void calcError(double[] outputs) {
+        System.out.println(outputs[0]);
         int lastLayerIndex = neuronLayers.length - 1;
         for (int i = lastLayerIndex; i >= 0; i--) {
             if (i == lastLayerIndex) {
@@ -74,7 +85,7 @@ public class NeuralNetwork {
         }
     }
 
-    public void forward() {
+    public void forward(double[] inputs) {
         double[] inp = new double[]{};
         double[] tempInp;
 
@@ -82,7 +93,7 @@ public class NeuralNetwork {
             tempInp = new double[neuronLayers[i].length];
 
             for (int j = 0; j < neuronLayers[i].length; j++) {
-                neuronLayers[i][j].setInputs((i != 0) ? inp : this.inputs);
+                neuronLayers[i][j].setInputs((i != 0) ? inp : inputs);
                 neuronLayers[i][j].calcSum();
                 neuronLayers[i][j].activate(this.activationFunction);
                 tempInp[j] = neuronLayers[i][j].getOutput();
@@ -90,30 +101,44 @@ public class NeuralNetwork {
             inp = tempInp;
         }
     }
+    public void train(){
+        int inputsSize = inputs.length;
+        int index = 0;
 
+        for (int i = 0; i < iterations; i++){
 
-    public double[] getInputs() {
+            forward(inputs[index]);
+            calcError(outputs[index]);
+            updateWeights();
+            index++;
+            index = (index == inputsSize) ? 0 : index;
+        }
+
+        //save weights to file
+    }
+
+    public double[][] getInputs() {
         return inputs;
     }
 
-    public void setInputs(double[] inputs) {
+    public void setInputs(double[][] inputs) {
         this.inputs = inputs;
     }
 
-    public double[] getOutputs() {
+    public double[][] getOutputs() {
         return outputs;
     }
 
-    public void setOutputs(double[] outputs) {
+    public void setOutputs(double[][] outputs) {
         this.outputs = outputs;
     }
 
     public int[] getNetworkSize() {
-        return networkSize;
+        return nodesInLayers;
     }
 
     public void setNetworkSize(int[] networkSize) {
-        this.networkSize = networkSize;
+        this.nodesInLayers = networkSize;
     }
 
     public ActivationFunction getActivationFunction() {
@@ -138,5 +163,9 @@ public class NeuralNetwork {
 
     public void setLearningRate(double learningRate) {
         this.learningRate = learningRate;
+    }
+
+    public void setIterations(int iterations) {
+        this.iterations = iterations;
     }
 }

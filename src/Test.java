@@ -14,31 +14,22 @@ public class Test {
         double[][] outputs = new double[][]{
                 {0},{1}, {1},{0}
         };
+        int[] nodes = new int[]{2,2,1};
 
 
-        NeuralNetwork net = new NeuralNetwork(new UnipolarActivationFunction());
-        net.setNetworkSize(new int[]{2,1});
-        net.setLearningRate(0.5);
-        int randomx = getRandomNumber(0,4);
+        NeuralNetwork net = new NeuralNetwork(inputs, outputs,nodes, new UnipolarActivationFunction());
+        net.setIterations(50000);
+        net.train();
 
 
-        net.setInputs(inputs[randomx]);
-        net.setOutputs(outputs[randomx]);
 
 
-        net.createLayers();
-        net.forward();
-        net.calcError();
 
 
-        for (int k = 0; k< 50000; k++){
-            net.updateWeights();
-            int random = getRandomNumber(0,4);
-            net.setInputs(inputs[random]);
-            net.setOutputs(outputs[random]);
-            net.forward();
-            net.calcError();
-        }
+
+
+
+
 
 
         List<Double> w = new ArrayList<>();
