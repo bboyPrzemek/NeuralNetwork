@@ -21,17 +21,17 @@ public class NeuralNetwork {
     public void createLayers() {
         int numOfNeuronLayers = nodesInLayers.length - 1;
         neuronLayers = new Neuron[numOfNeuronLayers][];
-      //  System.out.println(neuronLayers.length);
+        double [] initInputs = new double[nodesInLayers[0]];
+
         Neuron[] layer;
 
         for (int i = 1; i < nodesInLayers.length; i++) {
             layer = new Neuron[nodesInLayers[i]];
             for (int j = 0; j < nodesInLayers[i]; j++) {
                 if (i == 1) {
-                    Neuron neuron = new Neuron(inputs[0]);
+                    Neuron neuron = new Neuron(initInputs);
                     layer[j] = neuron;
                 } else {
-                    System.out.println(i);
                     int neuronsInPreviousLayer = neuronLayers[i - 2].length;
                     double[] tempInputs = new double[neuronsInPreviousLayer];
                     for (int k = 0; k < neuronsInPreviousLayer; k++) {
@@ -106,7 +106,6 @@ public class NeuralNetwork {
         int index = 0;
 
         for (int i = 0; i < iterations; i++){
-
             forward(inputs[index]);
             calcError(outputs[index]);
             updateWeights();
