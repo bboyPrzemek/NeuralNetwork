@@ -1,14 +1,17 @@
+import com.google.gson.Gson;
+import java.io.IOException;
+
 
 public class NeuralNetwork {
     private double[][] inputs;
     private double[][] outputs;
     private int[] nodesInLayers;
-    private ActivationFunction activationFunction;
+    private String activationFunction;
     private Neuron[][] neuronLayers;
     private double learningRate;
     private int iterations;
 
-    public NeuralNetwork(double[][] inputs, double[][] outputs,int[] nodesInLayers, ActivationFunction activationFunction) {
+    public NeuralNetwork(double[][] inputs, double[][] outputs,int[] nodesInLayers, String activationFunction) {
         this.activationFunction = activationFunction;
         this.inputs = inputs;
         this.outputs = outputs;
@@ -16,6 +19,7 @@ public class NeuralNetwork {
         this.learningRate = 0.5;
         this.iterations = 50000;
         createLayers();
+        randomizeNeuronValues();
     }
 
     public void createLayers() {
@@ -29,19 +33,25 @@ public class NeuralNetwork {
             layer = new Neuron[nodesInLayers[i]];
             for (int j = 0; j < nodesInLayers[i]; j++) {
                 if (i == 1) {
-                    Neuron neuron = new Neuron(initInputs);
-                    layer[j] = neuron;
+                    layer[j] = new Neuron(initInputs);
                 } else {
                     int neuronsInPreviousLayer = neuronLayers[i - 2].length;
                     double[] tempInputs = new double[neuronsInPreviousLayer];
                     for (int k = 0; k < neuronsInPreviousLayer; k++) {
                         tempInputs[k] = 0;
                     }
-                    Neuron neuron = new Neuron(tempInputs);
-                    layer[j] = neuron;
+                    layer[j] = new Neuron(tempInputs);
                 }
             }
             this.neuronLayers[i - 1] = layer;
+        }
+    }
+
+    public void randomizeNeuronValues(){
+        for (Neuron[] layer : neuronLayers){
+            for (Neuron neuron : layer){
+                neuron.initializeValues();
+            }
         }
     }
 
@@ -95,12 +105,13 @@ public class NeuralNetwork {
             for (int j = 0; j < neuronLayers[i].length; j++) {
                 neuronLayers[i][j].setInputs((i != 0) ? inp : inputs);
                 neuronLayers[i][j].calcSum();
-                neuronLayers[i][j].activate(this.activationFunction);
+                neuronLayers[i][j].activate(ActivationFunctionFactory.getActivationFunction(this.activationFunction));
                 tempInp[j] = neuronLayers[i][j].getOutput();
             }
             inp = tempInp;
         }
     }
+
     public void train(){
         int inputsSize = inputs.length;
         int index = 0;
@@ -112,9 +123,42 @@ public class NeuralNetwork {
             index++;
             index = (index == inputsSize) ? 0 : index;
         }
-
-        //save weights to file
     }
+
+    public double[] guess(double[] inputs, String weightsPath){
+        String weights = Utils.readFile(weightsPath);
+        Gson gson = new Gson();
+        NeuralNetwork nn = gson.fromJson(weights, NeuralNetwork.class);
+        int lastLayer = nn.nodesInLayers.length - 1;
+
+        for (Neuron neuron : nn.getNeuronLayers()[0]){
+            neuron.setInputs(inputs);
+        }
+        nn.forward(inputs);
+
+        double[] results = new double[nodesInLayers[lastLayer]];
+
+        int index = 0;
+
+        for (Neuron neuron : nn.getNeuronLayers()[lastLayer - 1]){
+            results[index] = neuron.getOutput();
+            index++;
+        }
+
+        return results;
+    }
+
+    public void saveWeights(){
+        Gson gson = new Gson();
+
+
+        try {
+            Utils.saveToFile("trained network.txt", gson.toJson(this));
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 
     public double[][] getInputs() {
         return inputs;
@@ -140,11 +184,11 @@ public class NeuralNetwork {
         this.nodesInLayers = networkSize;
     }
 
-    public ActivationFunction getActivationFunction() {
+    public String getActivationFunction() {
         return activationFunction;
     }
 
-    public void setActivationFunction(ActivationFunction activationFunction) {
+    public void setActivationFunction(String activationFunction) {
         this.activationFunction = activationFunction;
     }
 

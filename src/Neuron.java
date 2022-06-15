@@ -9,8 +9,9 @@ public class Neuron {
 
     public Neuron(double[] inputs){
         this.inputs = inputs;
-        initializeValues();
     }
+
+    public Neuron(){}
 
     public void initializeValues(){
         randomizeBias();
@@ -21,7 +22,7 @@ public class Neuron {
         this.inputs = inputs;
     }
 
-    public void activate(ActivationFunction activationFunction){
+    public void activate(I_ActivationFunction activationFunction){
         this.output = activationFunction.activate(sum);
     }
 
