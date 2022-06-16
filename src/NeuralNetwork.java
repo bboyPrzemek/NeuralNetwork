@@ -1,7 +1,6 @@
 import com.google.gson.Gson;
 import java.io.IOException;
 
-
 public class NeuralNetwork {
     private double[][] inputs;
     private double[][] outputs;
@@ -144,13 +143,11 @@ public class NeuralNetwork {
             results[index] = neuron.getOutput();
             index++;
         }
-
         return results;
     }
 
     public void saveWeights(){
         Gson gson = new Gson();
-
 
         try {
             Utils.saveToFile("trained network.txt", gson.toJson(this));

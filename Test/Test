@@ -1,0 +1,30 @@
+import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class Test {
+    public static void main(String[] args) {
+
+
+        double[][] inputs = new double[][]{
+                {0,0}, {0,1},{1,0},{1,1}
+        };
+
+        double[][] outputs = new double[][]{
+                {0},{1},{1},{0}
+
+        };
+        int[] nodes = new int[]{2,2,1};
+
+
+        NeuralNetwork net = new NeuralNetwork(inputs, outputs,nodes, "unipolar");
+        net.setIterations(50000);
+        net.train();
+        net.saveWeights();
+
+        for (double d : net.guess(new double[]{0.8,0.8}, "trained network.txt")){
+            System.out.println("output" + d);
+        }
+    }
+}
